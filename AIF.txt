@@ -11,16 +11,25 @@ https://tinyurl.com/cj4bjrw9
 2. 파일의 변경 사항을 git add + git commit 으로 저장하기
 2-1. 변경 사항을 저장하였는지 파일이 잇에 트랙 되어 있는지 파일 이름 확인 후 git status로 확인하기,
 2-2. 커밋 내역 조회는 git log --all --oneline 으로 확인 가능
-3. GitHub 에서 오리진 링크 지정하고 연동하기
-4. 로컬 -> 온라인 으로 파일을 업로드 할땐 git push를 사용하면 지금 사용중인 오리진 링크를 통해 온라인 리포지토리로
-파일 업로드 가능(커밋 변경 사항도 확인 가능)
-4-1. 온라인 -> 로컬로 파일을 받을때는 gitHub에서 받고자 하는 리포지토리 선택 후 오른쪽 <>Code 누르고 
-코드 복사 후 git bash에서 git clone "주소" 입력으로 내려받기
-4-2. 원래 사용하던 곳에서 쓰는 
+3. GitHub 에서 오리진 링크 지정하고 연동하기 (보통 로컬 리포지토리를 이미 만든 상태에서 브랜치에 연동하니까 그 방법을 기술)
+	git remote add origin "주소"
+	git branch -M main
+	git push -u origin main
+	ㄴ 위 내용은 깃허브 온라인 리포지토리 생성하는 곳에서 주소 복사하는게 있음(두번째꺼)
+4. 변경 사항이 있을 시 git add, git commit 후 git push 입력 시 온라인 리포지토리에 복제
 
-
-
-
+<추가 사용>
+1. 변경 사항이 있을 시 git add, git commit 후 git push 입력해서 온라인 리포지토리에 복제
+	ㄴ ** 파일 변동 사항 있으면 꼭 파일 저장 후에 add 할것 **
+2. (다른 환경에서 온라인 -> 로컬) 파일을 받을때는 gitHub에서 받고자 하는 리포지토리 선택 후 오른쪽 <>Code 누르고 
+	코드 복사 후 git bash에서 git clone "주소" 입력으로 내려받기
+2-1. 처음 사용하는 환경이라면 user/"사용하는 리포지토리 폴더" 에 내려받아지므로 그냥 사용
+2-2. 원래 사용하던 곳에서 쓰는 리포지토리를 업데이트 하고 싶을때
+	git fetch --all  # 원격 저장소 정보 업데이트
+	git reset --hard origin/main  # 로컬을 원격(main)과 동일하게 덮어쓰기
+	위 두 명령어를 입력하여 로컬 리포지토리 덮어씌우기
+	git fetch -- all은 원격 저장소의 최신 정보를 로컬로 받아오는 것이므로 최신 상태 확인을 위해서 필수
+	git reset --hard origin/main은 origin/main의 최신 상태로 로컬 리포지토리를 덮어씌우는 명령어
 
 Amazon SageMaker는 머신러닝 모델을 구축, 훈련 및 배포할 수 있는 AWS 서비스
 

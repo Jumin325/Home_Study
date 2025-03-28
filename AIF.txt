@@ -30,6 +30,7 @@ https://tinyurl.com/cj4bjrw9
 	위 두 명령어를 입력하여 로컬 리포지토리 덮어씌우기
 	git fetch -- all은 원격 저장소의 최신 정보를 로컬로 받아오는 것이므로 최신 상태 확인을 위해서 필수
 	git reset --hard origin/main은 origin/main의 최신 상태로 로컬 리포지토리를 덮어씌우는 명령어
+	위 방법과 사용하던 로컬 깃 리포지토리에서 터미널 창에 git pull로 최신 상태를 덮어씌울 수도 있음
 
 Amazon SageMaker는 머신러닝 모델을 구축, 훈련 및 배포할 수 있는 AWS 서비스
 

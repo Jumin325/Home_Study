@@ -1248,3 +1248,133 @@ Cognito 자격증명 풀(GIP, = Federated Identities)
 ㄴ 게스트 사용자나 특정 역할이 정의되지 않은 인증된 사용자는 기본 IAM 역할을 상속
 ㄴ Cognito 자격증명 풀을 사용하면 DynamoDB에 행 수준 보안을 설정할 수 있음
 ㄴ 자격증명풀의 개념은 웹에서의 소셜 로그인과 유사하지만 소셜 로그인은 오롯이 '사용자 인증'을 위한 수단일 뿐이고 자격증명풀은 인증된 사용자에게 AWS 리소스를 접근할 수 있는 권한(IAM 역할)을 부여하는 것
+
+<AWS 데이터베이스>
+RDBMS ex) RDS, Aurora
+    ㄴ SQL을 사용하거나 온라인 트랜잭션을 처리할 때 사용
+    ㄴ 조인에 유용함
+NoSQL ex) DynamoDB, ElastiCache, Neptune DocumentDB, KeySpaces
+    ㄴ 조인 기능이 없고 일반적으로 SQL 쿼리 언어를 사용하지 않음
+객체 스토어 ex) S3, 백업, 아카이브용 Glacier
+데이터 웨어하우스 ex) OLAP유형의 데이터베이스인 RedShift, Athena, EMR
+    ㄴ SQL 분석이나 비즈니스 인텔리전스(BI)를 사용
+검색 유형의 데이터베이스 ex) OpenSearch
+    ㄴ 자유롭게 텍스트를 입력하거나 비정형 데이터를 검색
+    ㄴ 그래프는 데이터 세트 간의 관계 표시 ex) Amazon Neptune
+원장 데이터베이스 ex) QLDB(퀀텀 원장 DB)
+    ㄴ 트랜잭션 목록과 원장을 기록
+시계열 데이터베이스 ex) TimeStream
+
+RDS
+ㄴ 관리형 PostgreSQL, MySQL, Oracle SQL, DB2, MariaDB
+ㄴ RDS 인스턴스 크기와 EBS 볼륨 유형 및 크기 프로비저닝
+ㄴ 읽기 전용 복제본을 지원하여 읽기 처리 능력 확장
+ㄴ 고가용성 목적으로 Multi-AZ를 사용하여 대기 데이터베이스 보유 가능
+ㄴ RDS 데이터베이스의 보안은 IAM을 통해 관리
+ㄴ 네트워크 보안은 보안 그룹을 통해 관리되며 저장 데이터 암호화는 KMS 사용
+ㄴ SSL/TLS를 사용하여 전송중 암호화
+ㄴ 백업은 최대 35일까지 지원되는 자동 백업, 수동 데이터베이스 스냅샷
+ㄴ IAM 인증을 지원하며 RDS 프록시를 통해 강제할 수 있음
+ㄴ Secret Manager와 통합하여 데이터베이스 자격 증명 관리
+
+Aurora
+ㄴ 두 개의 데이터베이스 엔진과 호환이 가능한 API (PostgreSQL, MySQL)
+ㄴ 스토리지와 컴퓨팅이 구분되어 있음
+ㄴ 기본설정으로 세 개의 가용 영역에 걸친 여섯 개의 레플리카에 데이터를 저장
+ㄴ 스토리지에 문제 발생 시 자가 복구
+ㄴ 스토리지 오토 스케일링 o (읽기 전용본도 오토 스케일링 ok)
+ㄴ 라이터/리더 엔드포인트 존재
+ㄴ 자동화된 백업 존재, 1~35일까지 설정 가능, 하지만 비활성화 불가능(RDS는 비활성화o)
+ㄴ 백트랙 기능
+ㄴ 수동 DB 스냅샷 
+    ㄴ Percona ExtraBackup을 통해 Aurora MySQL 클러스터에 백업 생성 -> S3에 저장(업로드) -> Aurora MySQL 클러스터에 복원 -> 복원 완료 후 데이터베이스 활성화(읽기/쓰기 접근 가능)
+ㄴ COW(Copy-On-Write) 프로토콜을 이용한 복제
+ㄴ Aurora 서버리스
+ㄴ Aurora global : 16개에 달하는 데이터베이스 리드 인스턴스 제공하고 DB가 복제된 리전마다 제공됨
+ㄴ 메인 리전에 문제가 생길 경우 서브 리전을 메인 리전으로 승급시킬 수 있음
+ㄴ 기계학습을 하고 싶다면 Aurora 기계 학습 모듈 사용 (SageMaker, Comprehend)
+
+ElastiCache
+관리형 Redis/Memcached
+ㄴ 캐싱 작업을 이용
+ㄴ 캐싱 작업을 위해 EC2 인스턴스 프로비저닝해야함
+ㄴ Redis용에서 클러스터 생성, 다중AZ, 샤딩을 위한 읽기 전용 복제본
+ㄴ IAM을 통해 프로비저닝한 보안과 보안 그룹 사용
+ㄴ 저장 데이터 암호화를 위한 KMS, Redis 인증
+ㄴ 백업 및 스냅샷 가능
+ㄴ 사용하기 위해선 애플리케이션 코드를 수정해줘야 함
+
+DynamoDB ex) 데이터베이스가 필요한 경우, 서버리스 애플리케이션 개발을 하는 경우
+관리형 서버리스 NoSQL 데이터베이스
+ㄴ 오토스케일링이 제공되는 프로비저닝된 용량 모드 : 시간에 따라 증가/감소하는 유형의 워크로드를 사용할 때
+ㄴ 온디맨드 용량 모드 : 워크로드 예측이 어려울 때
+ㄴ 키 값 저장소로 ElastiCache로 대체 가능
+ㄴ DAX 클러스터(=DynamoDB 액셀러레이터)
+ㄴ 보안과 승인 등 모두 IAM에서 이루어짐
+ㄴ DynamoDB Streams를 이용해 데이터베이스의 모든 변경사항 스트리밍 가능하고 람다 호출할 수 있음
+ㄴ Kinesis Data Stream, Kinesis Firehose 등과 통합 가능
+ㄴ 자동백업(PITR 활성화 필요) 최대 35일, 35일안에 S3로 내보내기 기능을 이용해 내보내기 가능
+ㄴ 장기간 백업엔 온디맨드 백업 사용
+ㄴ 빠르게 스키마를 변경해야 하거나 유연한 타입의 DB 스키마가 필요하다면 DynamoDB
+
+DocumentDB(=MongoDB의 Aurora 버전)
+ㄴ DocumentDB는 MongoDB 기반
+ㄴ MongoDB는 또 하나의 NoSQL 데이터베이스
+ㄴ 데이터는 세 개의 가용 영역에 걸쳐 복제
+
+Amazon Keyspaces ex) IoT 장치 정보와 시계열 데이터 저장
+AWS의 관리형 Apache Cassandra 보조
+Cassandra는 오픈소스 NoSQL 분산 데이터베이스
+ㄴ 애플리케이션 트래픽에 따라 자동으로 확장/축소
+ㄴ 테이블의 데이터는 여러 AZ에 걸쳐 세번 복제
+ㄴ Keyspaces에서 쿼리를 수행하려면 Cassandra쿼리 언어(CQL)을 사용
+ㄴ 어떤 규모든 지연 시간 10 밀리초 미만, 초당 수천건의 요청 처리
+ㄴ 온디맨드 모드와 프로비저닝 모드가 있는데 DynamoDB와 동일
+ㄴ 암호화 백업(자동, 최대 35일) 제공
+
+<머신러닝>
+Amazon Rekognition
+이미지와 비디오의 장면을 찾는 서비스
+ㄴ 인적 검토가 필요할 경우엔 Amazon Augmented AI(A2I) 사용
+ㄴ 인적 검토는 선택 옵션으로 민감한 이미지에 자동으로 플래그를 지정하도록 설정한 다음 최종 인적 검토를 사용해 유지 or 삭제를 결정
+
+Amazon Transcribe
+음성 -> 텍스트 변환시켜 주는 서비스
+ㄴ 자동 음성 인식(ASR)이라는 딥러닝 프로세스 사용하여 음성 -> 텍스트 변환
+ㄴ Redaction을 사용하여 개인 식별 정보(PII)를 자동으로 제거
+ㄴ 다국어 오디오를 자동으로 언어 식별
+
+Amazon Polly
+텍스트 -> 음성
+ㄴ '발음 어휘 목록'을 사용해 사용자 지정 발음을 생성할 수 있음
+    ㄴ 원하는 발음으로 읽게 하고자 할때 사용 ex) 'AWS'라고 읽는 대신 'Amazon Web Service'라고 풀어 읽게 하기
+ㄴ SSML(음성 합성 마크업 언어) 기능, 사용자 지정 음성을 만들 수 있는 기능
+
+Amazon Lex ex) 챗봇 구축, 콜 센터 봇 구축
+자동 음성 인식 서비스, ASR(Automatic Speech Recognition)
+ㄴ 자연어 이해를 통해 말의 의도를 파악하고 문장 이해 가능
+
+Amazon Comprehend
+자연어를 처리하는 NLP 서비스
+완전관리형 서버리스 서비스, 머신 러닝을 사용하여 텍스트에서 인사이트와 관계 도출
+ㄴ 텍스트 혹은 구조화 되지 않은 데이터를 Comprehend를 사용해 구조화
+
+Amazon Comprehend Medical
+비정형 의료 텍스트에서 유용한 정보를 탐지해서 반환해주는 서비스
+ㄴ 의사 소견서나 퇴원 요약서, 검사 결과서 등의 의료 사례 기록을 발견하면 NLP, 자연어 처리를 사용해 텍스트를 탐지하고 문서속에 보호된 개인 건강 정보(PHI)를 DetectPHI API로 탐지
+
+Amazon SageMaker
+완전 관리형 서비스이며 머신 러닝 모델을 구축하는 개발자와 데이터 과학자를 위한 서비스
+ㄴ 머신 러닝 모델을 구축하기 위한 모든 과정을 SageMaker를 이용해 처리
+ㄴ 라벨링, 구축, 훈련 및 조정, 적용 모두 SageMaker로 가능
+
+Amazon Forecast ex) 미래의 비옷 판매량 예측
+예측을 도와주는 완전 관리형 서비스
+ㄴ 머신 러닝을 사용하여 매우 정확한 예측 제공
+
+Amazon Kendra
+머신 러닝으로 제공되는 완전 관리형 문서 검색 서비스
+ㄴ 문서 내에서 답변 추출, 문서는 (text, pdf, html, PowerPoint, Word, FAQ 등)
+
+Amazon Textract
+텍스트 추출하는 서비스

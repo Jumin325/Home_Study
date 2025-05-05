@@ -942,8 +942,19 @@ Amazon Kinesis
 ㄴ Near Real-Time은 Amazon 파이어호스를 가리킴
     ㄴ 즉각적인 반응은 필요 없지만, 가능한 한 빨리 데이터를 처리해서 활용할 수 있도록 하는 처리 방식
 
-3. Kinesis Data Analytics
+3. Kinesis Data Analytics ex) 시계열 분석, 실시간 대시보드, 실시간 지표 등
 ㄴ SQL 언어나 Apache Flink를 활용하여 데이터 스트림을 분석
+SQL용 Kinesis Data Analytics
+ㄴ 서버리스 서비스이며 오토스케일링 가능
+ㄴ 전송된 데이터만큼 비용 지불
+ㄴ Kinesis Data Stream이나 Kinesis Data Firehose에 데이터를 출력할 수 있음
+Apache Flink용 Kinesis Data Analytics
+ㄴ Java, Scala, SQL로 애플리케이션 작성하고 스트리밍 데이터를 처리, 분석
+ㄴ Flink는 코드로 작성해야 하는 특별한 애플리케이션
+ㄴ Apache Flink는 표준 SQL보다 훨씬 강력하기 때문에 고급 쿼리 능력이 필요하거나 Data Stream, AWS의 관리형 Kafka인 Amazon MSK 같은 서비스로부터 스트리밍 데이터를 읽는 능력이 필요할 때 사용
+ㄴ 컴퓨팅 리소스를 자동 프로비저닝 + 병렬 연산과 오토 스케일링
+ㄴ 체크포인트와 스냅샷으로 백업 구현
+ㄴ Apache Flink는 Data Stream이나 MSK의 데이터는 읽지만 Data Firehose의 데이터는 못 읽음
 
 4. Kinesis Video Stream
 ㄴ 비디오 스트림을 수집하고 처리하여 저장
@@ -1378,3 +1389,97 @@ Amazon Kendra
 
 Amazon Textract
 텍스트 추출하는 서비스
+
+<데이터&분석>
+Amazon Athena ex) 임시 쿼리 수행, 비즈니스 인텔리전스 분석 및 보고, AWS 서비스에서 발생하는 모든 로그를 쿼리하고 분석(VPC 흐름로그, LB 로그, CloudTrail 추적 등)
+=> 서버리스 SQL 엔진을 사용한 Amazon S3 분석 -> Amazon Athena
+S3버킷에 저장된 데이터 분석에 사용하는 서버리스 쿼리 서비스
+SQL언어를 사용하는 Presto 엔진에 빌드
+ㄴ S3 버킷에 데이터를 로드하면 Athena 서비스를 사용해 이동하지 않고 S3에서 데이터를 쿼리하고 분석 가능
+ㄴ CSV, JSON, ORC, Avro Parquet 등의 형식 지원
+ㄴ 스캔된 데이터의 TB당 고정 가격을 지불
+ㄴ 서버리스여서 프로비저닝 x
+ㄴ Amazon QuickSight라는 도구와 함께 사용해 보고서와 대시보드 생성
+ㄴ 파일이 클수록 스캔과 검색이 쉬우므로 128MB 이상의 파일을 사용해야함
+ㄴ 연합 쿼리라는 기능이 있어 S3 뿐만 아니라 어떤 곳의 데이터도 쿼리할 수 있음
+
+Amazon RedShift
+OLAP 유형의 데이터베이스, 온라인 분석 처리, 데이터 웨어하우징에 사용함
+ㄴ PB의 데이터로 확대 가능
+ㄴ Columnar(열 기반) 스토리지 -> 병렬 쿼리 엔진 존재
+ㄴ 빠른 쿼리와 조인을 통합할 수 있음
+ㄴ 인덱스가 있고 고성능 데이터 웨어하우스를 위해 인덱스를 빌드함
+RedShift 클러스터는 두가지
+리더 노드 : 쿼리 계획과 결과 집합을 시킴
+계산 노드 : SQL 쿼리를 병렬로 처리하고 결과 데이터를 리더에게 전송하는 노드
+ㄴ Redshift는 대부분의 클러스터에 대해 싱글 AZ지만 특정 클러스터 유형에 대해 멀티 AZ 모드가 있음
+ㄴ 스냅샷은 point-in-time 백업이며 S3에 내부적으로 저장되고 증가
+ㄴ 스냅샷 자동화는 8시간 or 5GB마다 스냅샷, 수동 스냅샷은 계속 이야기하던 것과 동일(원할때 저장, 삭제 기간x)
+ㄴ RedShift는 자동 수동의 여부와 관계없이 해당 클러스터에서 다른 AWS 리전으로 스냅샷 자동복사
+
+RedShift 데이터 수집 방법
+1. Amazon Kinesis Firehose
+ㄴ 데이터를 S3로 로드 후 RedShift에서 복사 -> IAM 역할을 사용해 S3 버킷에서 RedShift 클러스터로 데이터 복사
+ㄴ 퍼블릭의 경우 인터넷을 통해 복사, 프라이빗의 경우 VPC 라우팅을 허용하여 VPC를 통해 복사
+ㄴ JDBC 드라이버를 사용해서 RedShift 클러스터로 데이터 유입도 가능
+2. RedShift Spectrum ex) Data Lake 쿼리(S3에 저장된 로그, 데이터 등을 바로 분석), 저비용 분석, ETL 보완(필요 시점에 쿼리, 필터된 데이터만 RedShift 가져오기)
+S3에 데이터가 있고 Redshift를 이용해 분석하고 싶지만 RedShift로 로드하고 싶지 않을때 사용
+ㄴ 더 많은 처리 능력을 사용하고 싶을때 사용
+ㄴ S3 데이터 저장 -> Glue Data Catalog에 테이블 등록(or Spectrum 자체 가탈로그 사용) -> RedShift에서 외부 스키마 생성 -> 쿼리 실행
+
+Amazon EMR(Elastic MapReduce) ex) 데이터 처리와 기계학습, 웹 인덱싱 빅 데이터 작업 등
+AWS에서 빅 데이터 작업을 위한 하둡 클러스터 생성에 사용
+ㄴ Apache Spark, HBase, Presto Apache Flink 이 3개 서비스에 관한 프로비저닝과 구성을 대신 처리해줌
+ㄴ 전체 클러스터를 자동으로 확장, 스팟 인스턴스와 통합되므로 가격 할인 혜택도 받을 수 있음
+ㄴ 마스터 노드는 클러스터 관리(다른 모든 노드의 상태를 조정하며 장기 실행)
+ㄴ 코어 노드는 태스크를 실행하고 데이터 저장
+ㄴ 태스크 노드(선택) 테스트만 실행하는 노드
+
+Amazon QuickSight
+서버리스 머신 러닝 기반 비즈니스 인텔리전스 서비스
+ㄴ 대화형 대시보드 생성
+ㄴ 대시보드를 생성하고 소유한 데이터 소스와 연결 -> 시각화 + 오토스케일링 가능
+ㄴ 웹사이트에 임베드 가능, 세션당 비용 지불
+ㄴ 엔터프라이즈 에디션에선 액세스 권한이 없는 사용자에게 일부 열이 표시되지 않도록 열 수준 보안(CLS) 설정 가능
+ㄴ 스탠다드 버전은 사용자 정의
+ㄴ 그룹은 엔터프라이즈 버전에서만 사용 가능
+ㄴ 사용자와 그룹은 QuickSight 전용 (IAM과 다름)
+ㄴ 대시보드는 읽기 전용 스냅샷이며 분석 결과 공유 가능
+
+AWS Glue
+추출과 변환 로드 서비스를 관리 -> ETL 서비스
+서버리스 서비스
+ㄴ 데이터를 Parquet 형식으로 변환
+ㄴ Glue 작업 북마크 : 새 ETL 작업을 실행할 때 이전 데이터의 재처리를 방지
+ㄴ Glue Elastic Views : SQL을 사용해 여러 데이터 스토어의 데이터를 결합하고 복제 (커스텀 코드 지원x)
+ㄴ Glue DataBrew : 사전 빌드된 변환을 사용해 데이터를 정리하고 정규화함
+ㄴ Glue Studio : Glue에서 ETL 작업을 생성, 실행 및 모니터링 하는 GUI
+ㄴ Glue Streaming : APache Spark Structured Streaming 위에 빌드되며 ETL 작업을 배치 작업이 아니라 스트리밍 작업으로 실행할 수 있음
+
+AWS Lake Formation
+데이터 레이크 생성을 도움
+    *데이터 레이크 : 데이터 분석을 위해 모든 데이터를 한 곳으로 모아 주는 중앙 집중식 저장소
+ㄴ 데이터 검색, 정제, 변환 주입을 도움
+ㄴ 데이터 수집, 정제나 카탈로깅, 복제 같은 복잡한 수작업 자동화하고 기계학습 변환 기능으로 중복제거 수행
+ㄴ 정형+비정형 데이터 소스를 결합할 수 있으며 블루프린트 제공
+ㄴ Lake Formation에 연결된 애플리케이션에서는 세분화된 액세스 제어가 가능
+ㄴ Glue 위에 빌드되지만 Glue와 직접 상호작용하지 않음
+ㄴ 소스 크롤러, ETL 및 데이터 준비 도구, 데이터 카탈로깅 도구가 포함됨
+ㄴ Ahtena, Redshift, EMR Apache Spark 프레임워크처럼 중앙화된 권한이 필요한 서비스에 사용
+ㄴ 보안을 관리할 곳이 많아질 때 Lake Formation에 연결하면 한곳에서 보안 관리
+
+Amazon MSK(Managed Streaming for Apache Kafka)
+Apache Kafka용 Amazon 관리형 스트리밍 서비스
+Amazon Kinesis의 대안
+ㄴ MSK는 그때그때 클러스터를 생성, 업데이트 삭제함
+ㄴ 클러스터 내 브로커 노드와 Zookeeper 브로커 노드를 생성 및 관리
+ㄴ 고가용성을 위해 VPC의 클러스터를 최대 세 개의 다중 AZ 전역에 배포
+ㄴ 일반 Kafka 장애 자동 복구 기능
+ㄴ 서버리스
+Apache Kafka는 데이터를 스트리밍 하는 방식
+ㄴ Kafka 주제로 데이터를 전송하면 해당 데이터는 다른 브로커로 완전 복제
+ㄴ 실시간으로 데이터를 스트리망하고 소비자는 데이터를 소비하기 위해 주제를 폴링함
+ㄴ Kinesis Data Stream에는 1MB의 메시지 크기 제한이 있지만 MSK는 기본이 1MB, 최대 10MB까지 설정 가능
+ㄴ Data Stream에선 샤드로 데이터 스트리밍, MSK에선 파티션을 이용한 Kafka 주제 사용
+ㄴ Data Stream에서 용량 확장/축소는 샤드 분할/병합, MSK는 파티션 추가로 주제 확장만 가능(파티션 제거x)
+ㄴ Data Stream에는 TLS 전송중 암호화, MSK는 평문 + TLS 전송중 암호화
